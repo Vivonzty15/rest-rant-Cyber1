@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react"
-import { useHistory } from "react-router"
+import { useContext, useState, useEffect } from "react"
+import { CurrentUser } from '../contexts/CurrentUser'
 
 function NewCommentForm({ place, onSubmit }) {
+
+     const { currentUser } = useContext(CurrentUser)
+    //console.log(currentUser)
 
     const [authors, setAuthors] = useState([])
 
@@ -12,11 +15,22 @@ function NewCommentForm({ place, onSubmit }) {
         authorId: ''
     })
 
+    //console.log(currentUser.userId)
+    function handleSubmit(e) {
+        e.preventDefault()
+        onSubmit(comment)
+        setComment({
+            content: '',
+            stars: 3,
+            rant: false
+        })
+    }
+
     useEffect(() => {
         const fetchData = async () => {
             const response = await fetch(`http://localhost:5000/users`)
             const users = await response.json()
-            setComment({ ...comment, authorId: users[0]?.userId})
+            setComment({ ...comment, authorId: currentUser?.userId })
             setAuthors(users)
         }
         fetchData()
@@ -26,15 +40,9 @@ function NewCommentForm({ place, onSubmit }) {
         return <option key={author.userId} value={author.userId}>{author.firstName} {author.lastName}</option>
     })
 
-    function handleSubmit(e) {
-        e.preventDefault()
-        onSubmit(comment)
-        setComment({
-            content: '',
-            stars: 3,
-            rant: false,
-            authorId: authors[0]?.userId
-        })
+   
+    if (!currentUser) {
+        return <p>You must be logged in to leave a rant or rave.</p>
     }
 
     return (
@@ -52,6 +60,7 @@ function NewCommentForm({ place, onSubmit }) {
                     />
                 </div>
             </div>
+
             <div className="row">
                 <div className="form-group col-sm-4">
                     <label htmlFor="state">Author</label>
@@ -59,6 +68,7 @@ function NewCommentForm({ place, onSubmit }) {
                         {authorOptions}
                     </select>
                 </div>
+
                 <div className="form-group col-sm-4">
                     <label htmlFor="stars">Star Rating</label>
                     <input
