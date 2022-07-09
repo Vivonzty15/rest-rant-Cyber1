@@ -2,6 +2,7 @@
 require('dotenv').config()
 const express = require('express')
 const bodyParser = require('body-parser')
+const path = require('path')
 const cors = require('cors')
 const app = express();
 const defineCurrentUser = require('./middleware/defineCurrentUser')
@@ -19,6 +20,12 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/places', require('./controllers/places'))
 app.use('/users', require('./controllers/users'))
 app.use('/authentication', require('./controllers/authentication'))
+
+// serve static front end in production mode
+if (process.env.NODE_ENV === "production") {
+    app.use(express.static(path.join(__dirname, 'public', 'build')));
+}
+
 
 // Listen for Connections
 app.listen(process.env.PORT, () => {
